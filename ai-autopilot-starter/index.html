@@ -3,14 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>自律アプリ開発ラボ</title>
+  <title>しごと追跡ボード</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
 <body>
+  <header>
+    <h1>しごと追跡ボード</h1>
+    <p class="subtitle">応募先や選考状況をブラウザ内だけで安全に管理するシンプルツール</p>
+  </header>
   <main>
-    <h1>AIアプリ開発ラボ</h1>
-    <p id="status">初回の自動開発が実行されると、ここにアプリが表示されます。</p>
+    <section class="card">
+      <h2>新規応募先の追加</h2>
+      <div class="form-group">
+        <label for="companyInput">企業名</label>
+        <input type="text" id="companyInput" placeholder="例: 株式会社サンプル">
+      </div>
+      <div class="form-group">
+        <label for="roleInput">職種・ポジション</label>
+        <input type="text" id="roleInput" placeholder="例: データサイエンティスト">
+      </div>
+      <div class="form-group">
+        <label for="statusInput">選考状況</label>
+        <select id="statusInput">
+          <option value="応募前">応募前</option>
+          <option value="応募済み" selected>応募済み</option>
+          <option value="選考中">選考中</option>
+          <option value="面接実施">面接実施</option>
+          <option value="内定">内定</option>
+          <option value="見送り・不採用">見送り・不採用</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="noteInput">メモ</label>
+        <textarea id="noteInput" placeholder="URLや選考メモなど"></textarea>
+      </div>
+      <button type="button" id="addButton">追加する</button>
+    </section>
+
+    <section class="card">
+      <div class="filter-bar">
+        <h2>応募一覧</h2>
+        <div class="form-group">
+          <label for="filterSelect">ステータス絞り込み:</label>
+          <select id="filterSelect">
+            <option value="all">すべて表示</option>
+            <option value="応募前">応募前</option>
+            <option value="応募済み">応募済み</option>
+            <option value="選考中">選考中</option>
+            <option value="面接実施">面接実施</option>
+            <option value="内定">内定</option>
+            <option value="見送り・不採用">見送り・不採用</option>
+          </select>
+        </div>
+      </div>
+      <div id="listContainer" aria-live="polite">
+        <!-- 動的生成 -->
+      </div>
+    </section>
   </main>
+  <footer>
+    <p>&copy; しごと追跡ボード (データはブラウザ内にのみ保存されます)</p>
+  </footer>
 </body>
 </html>
