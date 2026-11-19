@@ -21,7 +21,7 @@
     </section>
 
     <section class="card">
-      <h2>新規応募先の追加</h2>
+      <h2 id="formTitle">新規応募先の追加</h2>
       <div class="form-group">
         <label for="companyInput">企業名</label>
         <input type="text" id="companyInput" placeholder="例: 株式会社サンプル">
@@ -45,7 +45,10 @@
         <label for="noteInput">メモ</label>
         <textarea id="noteInput" placeholder="URLや選考メモなど"></textarea>
       </div>
-      <button type="button" id="addButton">追加する</button>
+      <div class="form-actions">
+        <button type="button" id="addButton">追加する</button>
+        <button type="button" id="cancelEditButton" class="secondary-btn" style="display:none;">編集をキャンセル</button>
+      </div>
     </section>
 
     <section class="card">

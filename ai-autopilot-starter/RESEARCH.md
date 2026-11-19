@@ -28,3 +28,18 @@
 - https://news.ycombinator.com/item?id=802543 — Subversion is much easier to start out with. False. 1. Subversion requires you to use tools which are Subversion-aware. If happen to delete or rename a file from the Finder, Windows Explorer without T
 - https://news.ycombinator.com/item?id=6128137 — Taren is an extremely bright activist in her own right. I had the pleasure of working with her for a summer back in 2000 at the CIIR. http://ciir.cs.umass.edu/REU/2000/REUpres/FinalReport2_files... I 
 - https://news.ycombinator.com/item?id=50410030 — I find that for even files that are less than 500 lines, if the changes are complex enough, I wish I could track viewed changes line-by-line.
+
+## 2026-11-19 12:59 UTC — 第3回
+
+日本語圏における就職活動・転職活動の進捗管理（応募先ごとのステータス、面接日程、メモの管理）は、スプレッドシートや専用の複雑な有料SaaSで行われることが多い。しかし、個人のプライバシーを完全に守りつつ、手軽にブラウザだけで完結させたいという軽量ツールへのニーズは潜在的に存在する。今回の市場調査シグナルでは直接的な統計データは得られていないため、大規模な需要の証明はできていない。あくまで「外部サーバーにデータを送信したくないユーザーが、ローカルで完結するシンプルな追跡ボードを求めている」という仮説に基づくものである。
+
+調査候補（掲示板のコメント。利用者数や需要の証明ではありません）：
+- https://news.ycombinator.com/item?id=8036392 — Well, it uses the libc runtime [This is actually mostly incorrect, see comment below by dbaupp], which obliges me to invoke the old quote, "the greatest trick C ever played was to convince the world i
+- https://news.ycombinator.com/item?id=802543 — Subversion is much easier to start out with. False. 1. Subversion requires you to use tools which are Subversion-aware. If happen to delete or rename a file from the Finder, Windows Explorer without T
+- https://news.ycombinator.com/item?id=6128137 — Taren is an extremely bright activist in her own right. I had the pleasure of working with her for a summer back in 2000 at the CIIR. http://ciir.cs.umass.edu/REU/2000/REUpres/FinalReport2_files... I 
+- https://news.ycombinator.com/item?id=50410030 — I find that for even files that are less than 500 lines, if the changes are complex enough, I wish I could track viewed changes line-by-line.
+- https://news.ycombinator.com/item?id=45197604 — The reason I ask: there's a story about a physicist who was so kinaesthetic in his thinking that somebody walked into his office to find him rolling around on the floor, trying to embody rotations fro
+- https://news.ycombinator.com/item?id=9702383 — SubTranslate is a simple tool for automatically translating "srt" subtitles for your movies using the google translate service. This is a command line tool written in Python 3 to translate your subtit
+- https://news.ycombinator.com/item?id=9543091 — Of course CompanyMood can never replace the personal communication within a company. But it can assist you to improve the work climate, providing a simple tool for mood tracking and suggestions.
+- https://news.ycombinator.com/item?id=9505639 — It seems to me that a simple transitional tool for a binary logging system would be for the implementer of the binary logging system to also include a tool that consumed a binary log file on stdin and
+- https://news.ycombinator.com/item?id=9335134 — These are the better ones I have. Mostly acquired for different startup ideas I'm riffing on. - read.io - tit.io - fix.io - foodcopter.com (for when drones deliver your dinner of course) - burgercopte
