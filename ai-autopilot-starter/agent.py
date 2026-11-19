@@ -12,17 +12,19 @@ import os
 import re
 import subprocess
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 ROOT = Path(__file__).resolve().parent
 SOURCE_FILES = ("index.html", "style.css", "app.js")
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite")
 MAX_SIZE = 35_000
 
 
@@ -146,15 +148,39 @@ def main() -> None:
     print(f"Collected {len(signals)} public examples. Generating cycle {cycle + 1}.")
     previous = {name: read(name) for name in SOURCE_FILES}
     client = genai.Client(api_key=key)
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=make_prompt(mission, state, signals, previous),
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            temperature=0.35,
-            max_output_tokens=16000,
-        ),
-    )
+    prompt = make_prompt(mission, state, signals, previous)
+    response = None
+    last_busy_error = None
+    # Transient 503 errors mean the service is overloaded. Keep retries bounded.
+    # Do not retry 429 (rate/quota limits) or 4xx authorization/model errors.
+    for model, attempts in ((MODEL, 3), (FALLBACK_MODEL, 2)):
+        for attempt in range(attempts):
+            try:
+                print(f"Generating with {model} (attempt {attempt + 1}/{attempts})", flush=True)
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.35,
+                        max_output_tokens=16000,
+                    ),
+                )
+                break
+            except errors.ServerError as exc:
+                if exc.code != 503:
+                    raise
+                last_busy_error = exc
+                if attempt + 1 < attempts:
+                    delay = 5 * (2 ** attempt)
+                    print(f"Model busy (HTTP 503). Retrying in {delay}s.", flush=True)
+                    time.sleep(delay)
+                else:
+                    print(f"Model {model} remained busy.", flush=True)
+        if response is not None:
+            break
+    if response is None:
+        raise RuntimeError("Both models remained busy (HTTP 503); try again later.") from last_busy_error
     if not response.text:
         raise RuntimeError("Empty AI response (quota, moderation or model issue possible)")
     data = json.loads(response.text)
