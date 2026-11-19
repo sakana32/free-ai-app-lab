@@ -13,6 +13,13 @@
     <p class="subtitle">応募先や選考状況をブラウザ内だけで安全に管理するシンプルツール</p>
   </header>
   <main>
+    <section class="card" id="summaryCard">
+      <h2>選考状況サマリー</h2>
+      <div id="summaryContainer" class="summary-grid">
+        <!-- 動的生成 -->
+      </div>
+    </section>
+
     <section class="card">
       <h2>新規応募先の追加</h2>
       <div class="form-group">
@@ -59,6 +66,18 @@
       </div>
       <div id="listContainer" aria-live="polite">
         <!-- 動的生成 -->
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>データ管理</h2>
+      <p class="subtitle" style="margin-bottom: 1rem;">データをJSONファイルとしてエクスポート（バックアップ）したり、インポートして復元できます。</p>
+      <div class="data-actions">
+        <button type="button" id="exportButton" class="secondary-btn">データ書き出し (JSON)</button>
+        <label for="importFileInput" class="file-input-label">
+          データ読み込み
+          <input type="file" id="importFileInput" accept=".json">
+        </label>
       </div>
     </section>
   </main>

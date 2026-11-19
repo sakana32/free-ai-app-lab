@@ -1,6 +1,7 @@
 'use strict';
 
 const STORAGE_KEY = 'job_tracker_items_v1';
+const STATUS_LIST = ['応募前', '応募済み', '選考中', '面接実施', '内定', '見送り・不採用'];
 
 function loadItems() {
   try {
@@ -17,6 +18,31 @@ function saveItems(items) {
   } catch (e) {}
 }
 
+function renderSummary(items) {
+  const summaryContainer = document.getElementById('summaryContainer');
+  if (!summaryContainer) return;
+
+  summaryContainer.textContent = '';
+
+  STATUS_LIST.forEach(status => {
+    const count = items.filter(i => i.status === status).length;
+    const box = document.createElement('div');
+    box.className = 'summary-box';
+
+    const label = document.createElement('div');
+    label.className = 'summary-label';
+    label.textContent = status;
+    box.appendChild(label);
+
+    const num = document.createElement('div');
+    num.className = 'summary-count';
+    num.textContent = count + '件';
+    box.appendChild(num);
+
+    summaryContainer.appendChild(box);
+  });
+}
+
 function render() {
   const listContainer = document.getElementById('listContainer');
   const filterSelect = document.getElementById('filterSelect');
@@ -24,6 +50,8 @@ function render() {
 
   const filterValue = filterSelect.value;
   const items = loadItems();
+
+  renderSummary(items);
 
   listContainer.textContent = '';
 
@@ -140,6 +168,42 @@ function deleteItem(id) {
   render();
 }
 
+function exportData() {
+  const items = loadItems();
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", "job_tracker_backup.json");
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (Array.isArray(parsed)) {
+        if (confirm('既存のデータに上書き、または統合しますか？ OKで上書き、キャンセルで中止します。')) {
+          saveItems(parsed);
+          render();
+          alert('データを正常に読み込みました。');
+        }
+      } else {
+        alert('無効なファイル形式です。');
+      }
+    } catch (err) {
+      alert('JSONファイルの解析に失敗しました。');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const addButton = document.getElementById('addButton');
   if (addButton) {
@@ -149,6 +213,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterSelect = document.getElementById('filterSelect');
   if (filterSelect) {
     filterSelect.addEventListener('change', render);
+  }
+
+  const exportButton = document.getElementById('exportButton');
+  if (exportButton) {
+    exportButton.addEventListener('click', exportData);
+  }
+
+  const importFileInput = document.getElementById('importFileInput');
+  if (importFileInput) {
+    importFileInput.addEventListener('change', importData);
   }
 
   render();
