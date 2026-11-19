@@ -77,14 +77,17 @@ def verify_source(files: dict[str, str]) -> None:
     for script in re.findall(r"<script\b([^>]*)>(.*?)</script\s*>", page, re.I | re.S):
         if not re.search(r'\bsrc\s*=\s*["\']app\.js["\']', script[0], re.I) or script[1].strip():
             raise ValueError("Only external local app.js is permitted; inline scripts are forbidden")
-    if re.search(r"<\s*(?:iframe|object|embed|base|form)\b", page, re.I):
-        raise ValueError("Disallowed HTML element")
-    if re.search(r"(?:https?:)?//", page + css + js, re.I):
+    bad_tag = re.search(r"<\s*(iframe|object|embed|base|form)\b", page, re.I)
+    if bad_tag:
+        raise ValueError(f"Disallowed HTML element: <{bad_tag.group(1).lower()}>")
+    # Reject literal external URLs but do not confuse ordinary JS // comments with URLs.
+    if re.search(r"\bhttps?://|(?<!:)//[a-z0-9.-]+\.[a-z]{2,}", page + css + js, re.I):
         raise ValueError("External URLs are not permitted in generated app files")
     if re.search(r"\bon\w+\s*=", page, re.I):
         raise ValueError("Inline HTML event handlers are not permitted")
     bad_js = r"\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|eval|Function|importScripts)\b|\bimport\s*\(|\b(?:innerHTML|outerHTML|insertAdjacentHTML)\b|serviceWorker"
-    if re.search(bad_js, js, re.I) or re.search(r"@import\b|url\s*\(", css, re.I):
+    # JavaScript keywords are case-sensitive: allow normal lowercase "function".
+    if re.search(bad_js, js) or re.search(r"@import\b|url\s*\(", css, re.I):
         raise ValueError("Disallowed dynamic/network feature in generated app")
     if not re.search(r"<\s*html\b", page, re.I):
         raise ValueError("Missing HTML tag")
@@ -129,7 +132,12 @@ features and stored data compatible. Avoid fabricated usage metrics or claims.
 6. Research summary must distinguish sourced examples from unproven assumptions.
 7. Keep each generated file under 35000 bytes. This is an experiment: avoid
 health, legal, or financial advice tools requiring expert accuracy.
-8. The AI CANNOT run code or change this workflow; the runner validates syntax.
+8. NEVER write <form>, <iframe>, <object>, <embed>, or <base> in index.html.
+For form-like input use a <div> containing <input>, <textarea> and
+<button type="button">, with addEventListener() handlers in app.js.
+9. Do not include external URLs, inline event handlers, or network operations.
+Use normal JavaScript functions; never use Function(), eval(), imports or fetch().
+10. The AI CANNOT run code or change this workflow; the runner validates syntax.
 Do not present tests as passing unless the runner actually checks them.
 """
 
@@ -148,48 +156,74 @@ def main() -> None:
     print(f"Collected {len(signals)} public examples. Generating cycle {cycle + 1}.")
     previous = {name: read(name) for name in SOURCE_FILES}
     client = genai.Client(api_key=key)
-    prompt = make_prompt(mission, state, signals, previous)
-    response = None
-    last_busy_error = None
-    # Transient 503 errors mean the service is overloaded. Keep retries bounded.
-    # Do not retry 429 (rate/quota limits) or 4xx authorization/model errors.
-    for model, attempts in ((MODEL, 3), (FALLBACK_MODEL, 2)):
-        for attempt in range(attempts):
-            try:
-                print(f"Generating with {model} (attempt {attempt + 1}/{attempts})", flush=True)
-                response = client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.35,
-                        max_output_tokens=16000,
-                    ),
-                )
+    original_prompt = make_prompt(mission, state, signals, previous)
+    feedback = ""
+    preferred_model = MODEL
+    data = None
+    # Failed validation should generate a correction, not disable the safety checks.
+    # Never write generated code before it passes all checks.
+    for revision in range(3):
+        response = None
+        last_busy_error = None
+        candidates = list(dict.fromkeys((preferred_model, FALLBACK_MODEL, MODEL)))
+        for model in candidates:
+            attempts = 2 if model == FALLBACK_MODEL else 3
+            for attempt in range(attempts):
+                try:
+                    print(f"Generating with {model} (attempt {attempt + 1}/{attempts}; revision {revision + 1}/3)", flush=True)
+                    response = client.models.generate_content(
+                        model=model,
+                        contents=original_prompt + feedback,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            temperature=0.25,
+                            max_output_tokens=16000,
+                        ),
+                    )
+                    preferred_model = model
+                    break
+                except errors.ServerError as exc:
+                    if exc.code != 503:
+                        raise
+                    last_busy_error = exc
+                    if attempt + 1 < attempts:
+                        delay = 5 * (2 ** attempt)
+                        print(f"Model busy (HTTP 503); retrying in {delay}s.", flush=True)
+                        time.sleep(delay)
+                    else:
+                        print(f"Model {model} remained busy.", flush=True)
+            if response is not None:
                 break
-            except errors.ServerError as exc:
-                if exc.code != 503:
-                    raise
-                last_busy_error = exc
-                if attempt + 1 < attempts:
-                    delay = 5 * (2 ** attempt)
-                    print(f"Model busy (HTTP 503). Retrying in {delay}s.", flush=True)
-                    time.sleep(delay)
-                else:
-                    print(f"Model {model} remained busy.", flush=True)
-        if response is not None:
+        if response is None:
+            raise RuntimeError("Both models remained busy (HTTP 503); try again later.") from last_busy_error
+        try:
+            if not response.text:
+                raise ValueError("Empty model response")
+            data = json.loads(response.text)
+            if not isinstance(data, dict):
+                raise ValueError("AI response must be a JSON object")
+            files = data.get("files")
+            if not isinstance(files, dict):
+                raise ValueError("AI output contains no files")
+            verify_source(files)
+            if not str(data.get("idea", "")).strip() or not str(data.get("change_summary", "")).strip():
+                raise ValueError("AI response missing product idea or change summary")
             break
-    if response is None:
-        raise RuntimeError("Both models remained busy (HTTP 503); try again later.") from last_busy_error
-    if not response.text:
-        raise RuntimeError("Empty AI response (quota, moderation or model issue possible)")
-    data = json.loads(response.text)
-    if not isinstance(data, dict):
-        raise ValueError("AI response must be an object")
-    files = data.get("files")
-    if not isinstance(files, dict):
-        raise ValueError("AI output contains no files")
-    verify_source(files)
+        except (ValueError, TypeError) as exc:
+            print(f"AI output failed checks (revision {revision + 1}/3): {str(exc)[:300]}", flush=True)
+            if revision == 2:
+                raise RuntimeError("AI failed to provide valid source after 3 correction attempts") from exc
+            feedback = (
+                "\n\nIMPORTANT: YOUR PREVIOUS RESPONSE FAILED VALIDATION: "
+                + str(exc)[:300]
+                + "\nRegenerate ALL JSON fields and ALL three full source files. "
+                "Follow every safety requirement exactly; NEVER use prohibited HTML "
+                "elements such as <form>, <iframe>, <object>, <embed>, or <base>. "
+                "Use only <div>, <input>, <textarea>, <button> and JS event listeners "
+                "for user input. Respond with JSON only.\n"
+            )
+    assert isinstance(data, dict)
+    files = data["files"]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     idea = str(data.get("idea", state.get("idea", "")))[:140]
     summary = str(data.get("change_summary", ""))[:1200]
