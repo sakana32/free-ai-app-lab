@@ -20,6 +20,27 @@ function saveItems(items) {
   } catch (e) {}
 }
 
+function getUrgencyInfo(nextDateStr) {
+  if (!nextDateStr) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const target = new Date(nextDateStr + 'T00:00:00');
+  if (isNaN(target.getTime())) return null;
+
+  const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { text: Math.abs(diffDays) + '日超過', className: 'urgency-overdue' };
+  } else if (diffDays === 0) {
+    return { text: '本日予定', className: 'urgency-today' };
+  } else if (diffDays <= 3) {
+    return { text: 'あと' + diffDays + '日', className: 'urgency-soon' };
+  } else {
+    return { text: 'あと' + diffDays + '日', className: 'urgency-future' };
+  }
+}
+
 function renderSummary(items) {
   const summaryContainer = document.getElementById('summaryContainer');
   if (!summaryContainer) return;
@@ -48,24 +69,61 @@ function renderSummary(items) {
 function render() {
   const listContainer = document.getElementById('listContainer');
   const filterSelect = document.getElementById('filterSelect');
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
   if (!listContainer || !filterSelect) return;
 
   const filterValue = filterSelect.value;
-  const items = loadItems();
+  const searchQuery = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+  const sortValue = sortSelect ? sortSelect.value : 'dateDesc';
 
+  const items = loadItems();
   renderSummary(items);
 
   listContainer.textContent = '';
 
-  const filtered = items.filter(item => {
-    if (filterValue === 'all') return true;
-    return item.status === filterValue;
+  let filtered = items.filter(item => {
+    if (filterValue !== 'all' && item.status !== filterValue) {
+      return false;
+    }
+    if (searchQuery) {
+      const comp = (item.company || '').toLowerCase();
+      const role = (item.role || '').toLowerCase();
+      const note = (item.note || '').toLowerCase();
+      const nextAction = (item.nextAction || '').toLowerCase();
+      if (!comp.includes(searchQuery) && !role.includes(searchQuery) &&
+          !note.includes(searchQuery) && !nextAction.includes(searchQuery)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // ソート処理
+  filtered.sort((a, b) => {
+    if (sortValue === 'nextDateAsc') {
+      if (!a.nextDate && !b.nextDate) return 0;
+      if (!a.nextDate) return 1;
+      if (!b.nextDate) return -1;
+      return a.nextDate.localeCompare(b.nextDate);
+    } else if (sortValue === 'dateAsc') {
+      const idA = a.id || '';
+      const idB = b.id || '';
+      return idA.localeCompare(idB);
+    } else {
+      // dateDesc (デフォルト: 最新作成順)
+      const idA = a.id || '';
+      const idB = b.id || '';
+      return idB.localeCompare(idA);
+    }
   });
 
   if (filtered.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-msg';
-    empty.textContent = '登録された応募先はありません。';
+    empty.textContent = (items.length === 0) 
+      ? '登録された応募先はまだありません。上のフォームから登録してください。'
+      : '条件に一致する応募先が見つかりませんでした。';
     listContainer.appendChild(empty);
     return;
   }
@@ -91,13 +149,48 @@ function render() {
     }
     header.appendChild(info);
 
+    const badgeContainer = document.createElement('div');
+    badgeContainer.className = 'badge-container';
+
     const badge = document.createElement('span');
     badge.className = 'badge badge-' + item.status;
     badge.textContent = item.status;
-    header.appendChild(badge);
+    badgeContainer.appendChild(badge);
 
+    if (item.nextDate) {
+      const urgency = getUrgencyInfo(item.nextDate);
+      if (urgency) {
+        const urgBadge = document.createElement('span');
+        urgBadge.className = 'badge-urgency ' + urgency.className;
+        urgBadge.textContent = urgency.text;
+        badgeContainer.appendChild(urgBadge);
+      }
+    }
+
+    header.appendChild(badgeContainer);
     card.appendChild(header);
 
+    // 次回アクション情報
+    if (item.nextDate || item.nextAction) {
+      const actionBox = document.createElement('div');
+      actionBox.className = 'action-box';
+
+      if (item.nextDate) {
+        const dateLine = document.createElement('div');
+        dateLine.className = 'action-date-line';
+        dateLine.textContent = '次回予定日: ' + item.nextDate;
+        actionBox.appendChild(dateLine);
+      }
+      if (item.nextAction) {
+        const actDetail = document.createElement('div');
+        actDetail.className = 'action-detail';
+        actDetail.textContent = item.nextAction;
+        actionBox.appendChild(actDetail);
+      }
+      card.appendChild(actionBox);
+    }
+
+    // メモ
     if (item.note) {
       const note = document.createElement('div');
       note.className = 'item-note';
@@ -117,7 +210,7 @@ function render() {
 
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
-    editBtn.className = 'edit-btn';
+    editBtn.className = 'action-btn edit-btn';
     editBtn.textContent = '編集';
     editBtn.addEventListener('click', () => {
       startEdit(item.id);
@@ -126,7 +219,7 @@ function render() {
 
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
-    delBtn.className = 'delete-btn';
+    delBtn.className = 'action-btn delete-btn';
     delBtn.textContent = '削除';
     delBtn.addEventListener('click', () => {
       deleteItem(item.id);
@@ -144,6 +237,8 @@ function handleSaveItem() {
   const companyInput = document.getElementById('companyInput');
   const roleInput = document.getElementById('roleInput');
   const statusInput = document.getElementById('statusInput');
+  const nextDateInput = document.getElementById('nextDateInput');
+  const nextActionInput = document.getElementById('nextActionInput');
   const noteInput = document.getElementById('noteInput');
 
   if (!companyInput || !statusInput) return;
@@ -156,14 +251,21 @@ function handleSaveItem() {
   }
 
   const items = loadItems();
+  const role = roleInput ? roleInput.value.trim() : '';
+  const status = statusInput.value;
+  const nextDate = nextDateInput ? nextDateInput.value : '';
+  const nextAction = nextActionInput ? nextActionInput.value.trim() : '';
+  const note = noteInput ? noteInput.value.trim() : '';
 
   if (editingId) {
     const index = items.findIndex(i => i.id === editingId);
     if (index !== -1) {
       items[index].company = company;
-      items[index].role = roleInput ? roleInput.value.trim() : '';
-      items[index].status = statusInput.value;
-      items[index].note = noteInput ? noteInput.value.trim() : '';
+      items[index].role = role;
+      items[index].status = status;
+      items[index].nextDate = nextDate;
+      items[index].nextAction = nextAction;
+      items[index].note = note;
     }
     saveItems(items);
     cancelEdit();
@@ -171,21 +273,36 @@ function handleSaveItem() {
     const newItem = {
       id: 'job_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       company: company,
-      role: roleInput ? roleInput.value.trim() : '',
-      status: statusInput.value,
-      note: noteInput ? noteInput.value.trim() : '',
+      role: role,
+      status: status,
+      nextDate: nextDate,
+      nextAction: nextAction,
+      note: note,
       date: new Date().toLocaleDateString('ja-JP')
     };
 
     items.unshift(newItem);
     saveItems(items);
-    companyInput.value = '';
-    if (roleInput) roleInput.value = '';
-    if (noteInput) noteInput.value = '';
-    statusInput.value = '応募済み';
+    resetFormFields();
   }
 
   render();
+}
+
+function resetFormFields() {
+  const companyInput = document.getElementById('companyInput');
+  const roleInput = document.getElementById('roleInput');
+  const statusInput = document.getElementById('statusInput');
+  const nextDateInput = document.getElementById('nextDateInput');
+  const nextActionInput = document.getElementById('nextActionInput');
+  const noteInput = document.getElementById('noteInput');
+
+  if (companyInput) companyInput.value = '';
+  if (roleInput) roleInput.value = '';
+  if (statusInput) statusInput.value = '応募済み';
+  if (nextDateInput) nextDateInput.value = '';
+  if (nextActionInput) nextActionInput.value = '';
+  if (noteInput) noteInput.value = '';
 }
 
 function startEdit(id) {
@@ -196,6 +313,8 @@ function startEdit(id) {
   const companyInput = document.getElementById('companyInput');
   const roleInput = document.getElementById('roleInput');
   const statusInput = document.getElementById('statusInput');
+  const nextDateInput = document.getElementById('nextDateInput');
+  const nextActionInput = document.getElementById('nextActionInput');
   const noteInput = document.getElementById('noteInput');
   const addButton = document.getElementById('addButton');
   const cancelEditButton = document.getElementById('cancelEditButton');
@@ -206,6 +325,8 @@ function startEdit(id) {
   companyInput.value = item.company;
   if (roleInput) roleInput.value = item.role || '';
   statusInput.value = item.status;
+  if (nextDateInput) nextDateInput.value = item.nextDate || '';
+  if (nextActionInput) nextActionInput.value = item.nextAction || '';
   if (noteInput) noteInput.value = item.note || '';
 
   editingId = id;
@@ -219,18 +340,11 @@ function startEdit(id) {
 
 function cancelEdit() {
   editingId = null;
-  const companyInput = document.getElementById('companyInput');
-  const roleInput = document.getElementById('roleInput');
-  const statusInput = document.getElementById('statusInput');
-  const noteInput = document.getElementById('noteInput');
+  resetFormFields();
+
   const addButton = document.getElementById('addButton');
   const cancelEditButton = document.getElementById('cancelEditButton');
   const formTitle = document.getElementById('formTitle');
-
-  if (companyInput) companyInput.value = '';
-  if (roleInput) roleInput.value = '';
-  if (statusInput) statusInput.value = '応募済み';
-  if (noteInput) noteInput.value = '';
 
   if (addButton) addButton.textContent = '追加する';
   if (cancelEditButton) cancelEditButton.style.display = 'none';
@@ -250,10 +364,10 @@ function deleteItem(id) {
 
 function exportData() {
   const items = loadItems();
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(items, null, 2));
   const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", "job_tracker_backup.json");
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute('download', 'job_tracker_backup.json');
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
@@ -268,14 +382,14 @@ function importData(event) {
     try {
       const parsed = JSON.parse(e.target.result);
       if (Array.isArray(parsed)) {
-        if (confirm('既存のデータに上書き、または統合しますか？ OKで上書き、キャンセルで中止します。')) {
+        if (confirm('現在のデータを読み込んだデータで上書きしますか？\n※既存の未保存内容は置き換えられます。')) {
           saveItems(parsed);
           cancelEdit();
           render();
           alert('データを正常に読み込みました。');
         }
       } else {
-        alert('無効なファイル形式です。');
+        alert('無効なファイル形式です。配列形式のJSONを指定してください。');
       }
     } catch (err) {
       alert('JSONファイルの解析に失敗しました。');
@@ -299,6 +413,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterSelect = document.getElementById('filterSelect');
   if (filterSelect) {
     filterSelect.addEventListener('change', render);
+  }
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', render);
+  }
+
+  const sortSelect = document.getElementById('sortSelect');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', render);
   }
 
   const exportButton = document.getElementById('exportButton');

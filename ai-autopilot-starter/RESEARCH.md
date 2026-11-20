@@ -43,3 +43,18 @@
 - https://news.ycombinator.com/item?id=9543091 — Of course CompanyMood can never replace the personal communication within a company. But it can assist you to improve the work climate, providing a simple tool for mood tracking and suggestions.
 - https://news.ycombinator.com/item?id=9505639 — It seems to me that a simple transitional tool for a binary logging system would be for the implementer of the binary logging system to also include a tool that consumed a binary log file on stdin and
 - https://news.ycombinator.com/item?id=9335134 — These are the better ones I have. Mostly acquired for different startup ideas I'm riffing on. - read.io - tit.io - fix.io - foodcopter.com (for when drones deliver your dinner of course) - burgercopte
+
+## 2026-11-20 13:04 UTC — 第4回
+
+公開コメント（https://news.ycombinator.com/item?id=9543091 や https://news.ycombinator.com/item?id=9335134 等）では、多機能で重厚なシステムよりも、特定目的に特化した「シンプルな単機能ツール」の利便性が繰り返し言及されています。ただしこれらは一般的な志向性を示す弱いシグナルに過ぎず、日本国内における就職・転職希望者がブラウザ内ローカル保存型の応募管理ツールを求めている規模や継続利用率を実証するものではありません。そのため、余計な登録や通信を一切求めず、実用的に面接日程や提出期限を整理できる手軽な道具としての洗練を進めます。
+
+調査候補（掲示板のコメント。利用者数や需要の証明ではありません）：
+- https://news.ycombinator.com/item?id=9702383 — SubTranslate is a simple tool for automatically translating "srt" subtitles for your movies using the google translate service. This is a command line tool written in Python 3 to translate your subtit
+- https://news.ycombinator.com/item?id=9543091 — Of course CompanyMood can never replace the personal communication within a company. But it can assist you to improve the work climate, providing a simple tool for mood tracking and suggestions.
+- https://news.ycombinator.com/item?id=9505639 — It seems to me that a simple transitional tool for a binary logging system would be for the implementer of the binary logging system to also include a tool that consumed a binary log file on stdin and
+- https://news.ycombinator.com/item?id=9335134 — These are the better ones I have. Mostly acquired for different startup ideas I'm riffing on. - read.io - tit.io - fix.io - foodcopter.com (for when drones deliver your dinner of course) - burgercopte
+- https://news.ycombinator.com/item?id=8739368 — > Gradle is good enough to be getting on with, but i'm looking forward to the next step. Check out Buck. It's fast, the codebase and general complexity is a tiny fraction compared to Maven or Gradle, 
+- https://news.ycombinator.com/item?id=9965916 — I really want to play Phutball, now. I wish there was an android app.
+- https://news.ycombinator.com/item?id=9734441 — I love what DDG represents and I try it first just to show my support. But, if I can't find what I'm looking for I activate VPN, open an incognito window and search with Google. Civilian OPSEC is pain
+- https://news.ycombinator.com/item?id=7211764 — The two key factors to these (IMHO crappy apps) are the fact that the animal echos what the child says in a high-pitch funny sounding voice, and when "hit" it reacts. Rinse, repeat (a million times) a
+- https://news.ycombinator.com/item?id=6088821 — Hi, your app seems great! I am however having trouble understanding how it works - does it upload the recording after an arbitrary period of time or does it stream it from the start of the recording p

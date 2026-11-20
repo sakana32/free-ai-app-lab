@@ -10,8 +10,9 @@
 <body>
   <header>
     <h1>しごと追跡ボード</h1>
-    <p class="subtitle">応募先や選考状況をブラウザ内だけで安全に管理するシンプルツール</p>
+    <p class="subtitle">応募先・面接日程・選考状況をブラウザ内だけで安全に整理する就活・転職支援ツール</p>
   </header>
+
   <main>
     <section class="card" id="summaryCard">
       <h2>選考状況サマリー</h2>
@@ -22,49 +23,81 @@
 
     <section class="card">
       <h2 id="formTitle">新規応募先の追加</h2>
-      <div class="form-group">
-        <label for="companyInput">企業名</label>
-        <input type="text" id="companyInput" placeholder="例: 株式会社サンプル">
-      </div>
-      <div class="form-group">
-        <label for="roleInput">職種・ポジション</label>
-        <input type="text" id="roleInput" placeholder="例: データサイエンティスト">
-      </div>
-      <div class="form-group">
-        <label for="statusInput">選考状況</label>
-        <select id="statusInput">
-          <option value="応募前">応募前</option>
-          <option value="応募済み" selected>応募済み</option>
-          <option value="選考中">選考中</option>
-          <option value="面接実施">面接実施</option>
-          <option value="内定">内定</option>
-          <option value="見送り・不採用">見送り・不採用</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="noteInput">メモ</label>
-        <textarea id="noteInput" placeholder="URLや選考メモなど"></textarea>
-      </div>
-      <div class="form-actions">
-        <button type="button" id="addButton">追加する</button>
-        <button type="button" id="cancelEditButton" class="secondary-btn" style="display:none;">編集をキャンセル</button>
+      <div class="input-container">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="companyInput">企業名 <span class="required-badge">必須</span></label>
+            <input type="text" id="companyInput" placeholder="例: 株式会社サンプル">
+          </div>
+          <div class="form-group">
+            <label for="roleInput">職種・ポジション</label>
+            <input type="text" id="roleInput" placeholder="例: フロントエンドエンジニア">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="statusInput">選考状況</label>
+            <select id="statusInput">
+              <option value="応募前">応募前</option>
+              <option value="応募済み" selected>応募済み</option>
+              <option value="選考中">選考中</option>
+              <option value="面接実施">面接実施</option>
+              <option value="内定">内定</option>
+              <option value="見送り・不採用">見送り・不採用</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nextDateInput">次回予定日（面接日・締切など）</label>
+            <input type="date" id="nextDateInput">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="nextActionInput">次回アクション内容</label>
+          <input type="text" id="nextActionInput" placeholder="例: 一次面接(14:00〜 オンライン)、課題提出">
+        </div>
+
+        <div class="form-group">
+          <label for="noteInput">メモ（URL、志望動機ポイント、条件など）</label>
+          <textarea id="noteInput" placeholder="求人票URLや連絡事項、面接で聞きたい逆質問など"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="addButton">追加する</button>
+          <button type="button" id="cancelEditButton" class="secondary-btn" style="display:none;">編集をキャンセル</button>
+        </div>
       </div>
     </section>
 
     <section class="card">
-      <div class="filter-bar">
+      <div class="list-controls">
         <h2>応募一覧</h2>
-        <div class="form-group">
-          <label for="filterSelect">ステータス絞り込み:</label>
-          <select id="filterSelect">
-            <option value="all">すべて表示</option>
-            <option value="応募前">応募前</option>
-            <option value="応募済み">応募済み</option>
-            <option value="選考中">選考中</option>
-            <option value="面接実施">面接実施</option>
-            <option value="内定">内定</option>
-            <option value="見送り・不採用">見送り・不採用</option>
-          </select>
+        <div class="controls-grid">
+          <div class="form-group compact-group">
+            <label for="searchInput">キーワード検索</label>
+            <input type="text" id="searchInput" placeholder="企業名、職種、メモ等で検索">
+          </div>
+          <div class="form-group compact-group">
+            <label for="filterSelect">ステータス絞り込み</label>
+            <select id="filterSelect">
+              <option value="all">すべて表示</option>
+              <option value="応募前">応募前</option>
+              <option value="応募済み">応募済み</option>
+              <option value="選考中">選考中</option>
+              <option value="面接実施">面接実施</option>
+              <option value="内定">内定</option>
+              <option value="見送り・不採用">見送り・不採用</option>
+            </select>
+          </div>
+          <div class="form-group compact-group">
+            <label for="sortSelect">並び替え</label>
+            <select id="sortSelect">
+              <option value="dateDesc">登録日 (新しい順)</option>
+              <option value="dateAsc">登録日 (古い順)</option>
+              <option value="nextDateAsc">次回予定日 (直近順)</option>
+            </select>
+          </div>
         </div>
       </div>
       <div id="listContainer" aria-live="polite">
@@ -73,19 +106,20 @@
     </section>
 
     <section class="card">
-      <h2>データ管理</h2>
-      <p class="subtitle" style="margin-bottom: 1rem;">データをJSONファイルとしてエクスポート（バックアップ）したり、インポートして復元できます。</p>
+      <h2>データ管理・バックアップ</h2>
+      <p class="subtitle mb-3">データは端末のブラウザ（LocalStorage）にのみ安全に保存されています。他の端末への移行やバックアップ用のJSON書き出し・読み込みが可能です。</p>
       <div class="data-actions">
         <button type="button" id="exportButton" class="secondary-btn">データ書き出し (JSON)</button>
         <label for="importFileInput" class="file-input-label">
-          データ読み込み
+          データ読み込み (JSON)
           <input type="file" id="importFileInput" accept=".json">
         </label>
       </div>
     </section>
   </main>
+
   <footer>
-    <p>&copy; しごと追跡ボード (データはブラウザ内にのみ保存されます)</p>
+    <p>&copy; しごと追跡ボード - 完全ローカル完結型</p>
   </footer>
 </body>
 </html>
