@@ -58,3 +58,18 @@
 - https://news.ycombinator.com/item?id=9734441 — I love what DDG represents and I try it first just to show my support. But, if I can't find what I'm looking for I activate VPN, open an incognito window and search with Google. Civilian OPSEC is pain
 - https://news.ycombinator.com/item?id=7211764 — The two key factors to these (IMHO crappy apps) are the fact that the animal echos what the child says in a high-pitch funny sounding voice, and when "hit" it reacts. Rinse, repeat (a million times) a
 - https://news.ycombinator.com/item?id=6088821 — Hi, your app seems great! I am however having trouble understanding how it works - does it upload the recording after an arbitrary period of time or does it stream it from the start of the recording p
+
+## 2026-11-21 12:36 UTC — 第5回
+
+実際のユーザーの投稿（HN#40256059、HN#1619556）では、求職活動やアパート探しにおいて「応募先ごとの企業名、選考状況（ゴースト化、不採用、面接）、訪問履歴などをスプレッドシートや手作業で管理しており、情報整理や進捗把握に改善の余地がある」というシグナルが確認できます。これらは日々の転職活動におけるタスク管理の負担を軽減するニーズを示していますが、全市場規模や長期的なエンゲージメントを直接証明するものではありません。
+
+調査候補（掲示板のコメント。利用者数や需要の証明ではありません）：
+- https://news.ycombinator.com/item?id=9965916 — I really want to play Phutball, now. I wish there was an android app.
+- https://news.ycombinator.com/item?id=9734441 — I love what DDG represents and I try it first just to show my support. But, if I can't find what I'm looking for I activate VPN, open an incognito window and search with Google. Civilian OPSEC is pain
+- https://news.ycombinator.com/item?id=7211764 — The two key factors to these (IMHO crappy apps) are the fact that the animal echos what the child says in a high-pitch funny sounding voice, and when "hit" it reacts. Rinse, repeat (a million times) a
+- https://news.ycombinator.com/item?id=6088821 — Hi, your app seems great! I am however having trouble understanding how it works - does it upload the recording after an arbitrary period of time or does it stream it from the start of the recording p
+- https://news.ycombinator.com/item?id=5658901 — Love the article! It does make me wish there was an app I could use to proof-read your site, correct your writing mistakes and share the link with you. Some fixes: Been a printer’s engineer > Being a 
+- https://news.ycombinator.com/item?id=42865256 — I was a happy Disco user. A lot of the Mac apps from that era were fun and made me want to find excuses to use them, rather than look for excuses to avoid what might otherwise feel like work. In the c
+- https://news.ycombinator.com/item?id=40256059 — My workmates and I got laid off by our employer (a FAANG company) last summer and I spent 4 months looking for a job (in Ireland). I started using a simple spreadsheet to keep track of all the jobs yo
+- https://news.ycombinator.com/item?id=3029971 — I could not agree more. And not only should all projects include QA, but they should include QA by an actual quality assurance analyst or team. QA performed by minimum wage (or low payed) temps or sho
+- https://news.ycombinator.com/item?id=1619556 — I actually used this a few months ago when I was looking for an apartment. Great site! One thing I needed to do was keep track of which places I had visited (whether I liked or disliked them), which p

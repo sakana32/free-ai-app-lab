@@ -51,6 +51,15 @@ function renderSummary(items) {
     const count = items.filter(i => i.status === status).length;
     const box = document.createElement('div');
     box.className = 'summary-box';
+    box.title = status + 'の案件をフィルター表示';
+
+    box.addEventListener('click', () => {
+      const filterSelect = document.getElementById('filterSelect');
+      if (filterSelect) {
+        filterSelect.value = status;
+        render();
+      }
+    });
 
     const label = document.createElement('div');
     label.className = 'summary-label';

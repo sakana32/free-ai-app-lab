@@ -85,6 +85,13 @@ main {
   border-radius: 8px;
   padding: 0.65rem 0.5rem;
   text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.summary-box:hover {
+  background: #f1f5f9;
+  border-color: var(--primary);
 }
 
 .summary-label {
